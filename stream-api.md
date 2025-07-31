@@ -1,5 +1,5 @@
 
-** Phức tạm
+## Phức tạm
 List<CustomerSummary> summaries = orders.stream()
     .filter(order -> order.getStatus() == Status.COMPLETED && order.getAmount() > 100)
     .collect(Collectors.groupingBy(Order::getCustomerId,
@@ -36,7 +36,7 @@ List<CustomerSummary> summaries = highSpendingCustomers.stream()
     .map(entry -> new CustomerSummary(entry.getKey(), entry.getValue()))
     .toList();
 
-** Ghi chú các bước
+## Ghi chú các bước
 Stream<Person> personStream = people.stream();
 
 // Bước 1: Lọc người đủ tuổi
@@ -54,7 +54,7 @@ Stream<String> sortedNames = uniqueNames.sorted();
 // Bước 5: Giới hạn số lượng
 List<String> result = sortedNames.limit(5).collect(Collectors.toList());
 
-** Đặt tên gợi nhớ
+## Đặt tên gợi nhớ
 Stream<Person> personStream = people.stream();
 Stream<Person> adults = personStream.filter(p -> p.getAge() > 18);
 Stream<String> adultNames = adults.map(Person::getName);
