@@ -221,7 +221,7 @@ throw new IllegalArgumentException("Giá trị userId không được null");
 
 1. Phân biệt Exception trong Java
 2. `throw` vs `throws`
-3. Checked vs Unchecked Exception
+3. `Checked` vs `Unchecked` Exception
 4. Custom Exception
 5. GlobalExceptionHandler trong Spring Boot
 6. Chuẩn hóa mã lỗi (code, message)
@@ -231,10 +231,9 @@ throw new IllegalArgumentException("Giá trị userId không được null");
 ## 1. Phân biệt Exception trong Java
 
 | Loại | Mô tả |
-| ---- | ----- |
-| **Checked**   | Bắt buộc phải xử lý (compile-time). Ví dụ: `IOException`, `SQLException`                       |
+| `Checked`   | Bắt buộc phải xử lý (compile-time). Ví dụ: `IOException`, `SQLException`                       |
 | ------------- | ---------------------------------------------------------------------------------------------- |
-| **Unchecked** | Không bắt buộc phải xử lý (runtime). Ví dụ: `NullPointerException`, `IllegalArgumentException` |
+| `Unchecked` | Không bắt buộc phải xử lý (runtime). Ví dụ: `NullPointerException`, `IllegalArgumentException` |
 
 📌 **Nguyên tắc**:
 
@@ -303,9 +302,10 @@ public class BusinessException extends RuntimeException {
 
 ## 5. GlobalExceptionHandler trong Spring Boot
 
-📌 Cấu trúc nên đặt trong package `com.yourapp.exception`
+📁 Package structure:
 
-com.yourapp
+```
+com.example
 ├── controller
 ├── service
 ├── exception
@@ -313,7 +313,8 @@ com.yourapp
 │   ├── ApiError.java
 │   ├── ResourceNotFoundException.java
 │   └── BusinessException.java
-
+```
+✅ Dễ mở rộng: thêm các BusinessException, ValidationException tùy logic.
 
 ```java
 @RestControllerAdvice
