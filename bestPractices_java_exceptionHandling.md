@@ -113,6 +113,11 @@ try (BufferedReader reader = new BufferedReader(new FileReader("file.txt"))) {
 ## 6. Sử dụng exception chaining để giữ stack trace và thêm context
 **Lý thuyết:** Bao lại exception gốc bên trong custom exception, giúp giữ thông tin nguyên nhân ban đầu.
 
+**Code cũ:**
+```java
+hrow new BusinessException("Lỗi xử lý user"); // mất trace gốc (e)
+```
+
 **Code mới:**
 ```java
 catch (SQLException e) {
