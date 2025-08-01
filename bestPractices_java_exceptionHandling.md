@@ -230,9 +230,9 @@ throw new IllegalArgumentException("Giá trị userId không được null");
 
 ## 1. Phân biệt Exception trong Java
 
-| Loại | Mô tả |
-| `Checked`   | Bắt buộc phải xử lý (compile-time). Ví dụ: `IOException`, `SQLException`                       |
+| Loại          | Mô tả                                                                                         |
 | ------------- | ---------------------------------------------------------------------------------------------- |
+| `Checked`   | Bắt buộc phải xử lý (compile-time). Ví dụ: `IOException`, `SQLException`                       |
 | `Unchecked` | Không bắt buộc phải xử lý (runtime). Ví dụ: `NullPointerException`, `IllegalArgumentException` |
 
 📌 **Nguyên tắc**:
@@ -302,8 +302,7 @@ public class BusinessException extends RuntimeException {
 
 ## 5. GlobalExceptionHandler trong Spring Boot
 
-📁 Package structure:
-
+📁 Package structure: Dễ mở rộng: thêm các BusinessException, ValidationException tùy logic.
 ```
 com.example
 ├── controller
@@ -314,8 +313,8 @@ com.example
 │   ├── ResourceNotFoundException.java
 │   └── BusinessException.java
 ```
-✅ Dễ mở rộng: thêm các BusinessException, ValidationException tùy logic.
 
+Ví dụ:
 ```java
 @RestControllerAdvice
 public class GlobalExceptionHandler {
