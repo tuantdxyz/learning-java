@@ -1,4 +1,5 @@
 # Redis Cluster & Sentinel trong Java - Hướng dẫn tổng hợp
+Vì là dữ liệu cache, mà cache thì có nhiều level nên đã dùng thì phải hiểu, áp dụng cho chuẩn.
 
 ## 1. Mục tiêu tài liệu
 Redis hỗ trợ rất nhiều kiểu cấu trúc dữ liệu như string, hash, list, set, sorted set, pub/sub,..
