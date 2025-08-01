@@ -232,17 +232,6 @@ throw new IllegalArgumentException("Giá trị userId không được null");
 
 | Loại | Mô tả |
 | ---- | ----- |
-|      |       |
-
-|   |
-| - |
-
-|   |
-| - |
-
-|   |
-| - |
-
 | **Checked**   | Bắt buộc phải xử lý (compile-time). Ví dụ: `IOException`, `SQLException`                       |
 | ------------- | ---------------------------------------------------------------------------------------------- |
 | **Unchecked** | Không bắt buộc phải xử lý (runtime). Ví dụ: `NullPointerException`, `IllegalArgumentException` |
@@ -251,8 +240,8 @@ throw new IllegalArgumentException("Giá trị userId không được null");
 
 - Dùng **checked exception** khi: caller có thể xử lý lỗi được.
 - Dùng **unchecked exception** khi: lỗi là do bug hoặc logic sai mà caller **không xử lý được**.
--  Khái niệm: Compile-time (Checked Exception): Xảy ra khi biên dịch. Trình biên dịch sẽ báo lỗi nếu không xử lý. Đối tượng exception này thường do ngoại cảnh (I/O, DB...).
--  Khái niệm: Runtime (Unchecked Exception): Xảy ra khi chương trình đang chạy. Thường do bug, sai logic.
+- Khái niệm: Compile-time (Checked Exception): Xảy ra khi biên dịch. Trình biên dịch sẽ báo lỗi nếu không xử lý. Đối tượng exception này thường do ngoại cảnh (I/O, DB...).
+- Khái niệm: Runtime (Unchecked Exception): Xảy ra khi chương trình đang chạy. Thường do bug, sai logic.
 
 ---
 
