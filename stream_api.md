@@ -1,4 +1,5 @@
-## Phức tạm
+# Nên thay thế dần cho for each truyền thống
+## Không nên viết quá phức tạm
 ```java
 List<CustomerSummary> summaries = orders.stream()
     .filter(order -> order.getStatus() == Status.COMPLETED && order.getAmount() > 100)
