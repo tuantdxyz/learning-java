@@ -42,6 +42,24 @@ public void copyProperties(Object source, Object target) throws Exception {
 }
 ```
 
+**Ví dụ Input/Output:**
+
+```java
+class UserDTO {
+    private String name;
+    private int age;
+}
+
+class UserEntity {
+    private String name;
+    private int age;
+}
+
+// Gọi: copyProperties(dto, entity);
+```
+
+---
+
 ### 2. Workflow / Rule Engine cấu hình động
 
 **📌 Mục tiêu:** Cho phép hệ thống chạy rule theo config mà không cần hard-code.
@@ -51,14 +69,10 @@ public void copyProperties(Object source, Object target) throws Exception {
 **Step-by-step:**
 
 1. Input:
-
    - Order đầu vào
    - List tên các Rule class từ config ngoài.
-
 2. Output: Order sau khi áp dụng các rule
-
 3. Cách thực hiện:
-
    - Lấy danh sách rule từ Redis hoặc file
    - Duyệt từng ruleClass:
      - Dùng `Class.forName(...)` để load class
@@ -74,7 +88,7 @@ public void applyRulesFromConfig(List<String> ruleClassNames, Order order) throw
         Class<?> clazz = Class.forName(ruleClass);
         Object ruleObj = clazz.getDeclaredConstructor().newInstance();
         Method method = clazz.getDeclaredMethod("apply", Order.class);
-        method.invoke(ruleObj, order); // Gọi apply(order) runtime
+        method.invoke(ruleObj, order);
     }
 }
 ```
@@ -93,6 +107,8 @@ public class ShippingRule {
 }
 ```
 
+---
+
 ### 3. Dynamic Plugin / Module Loader
 
 **📌 Mục tiêu:** Cho phép load module plugin từ JAR bên ngoài runtime.
@@ -102,15 +118,11 @@ public class ShippingRule {
 **Step-by-step:**
 
 1. Input:
-
    - Đường dẫn JAR
    - Tên class plugin
    - Context truyền vào
-
 2. Output: Kết quả xử lý plugin
-
 3. Cách thực hiện:
-
    - Dùng `URLClassLoader` để load JAR
    - Load class plugin từ JAR
    - Gọi method `run(context)` bằng Reflection
@@ -123,6 +135,8 @@ Class<?> plugin = loader.loadClass("com.plugin.EntryPoint");
 Method execute = plugin.getMethod("run", Context.class);
 execute.invoke(plugin.getDeclaredConstructor().newInstance(), context);
 ```
+
+---
 
 ### 4. Object Inspection / Audit / Logging
 
@@ -145,6 +159,8 @@ for (Field field : object.getClass().getDeclaredFields()) {
     System.out.println(field.getName() + " = " + field.get(object));
 }
 ```
+
+---
 
 ### 5. Unit Test private method
 
@@ -169,31 +185,89 @@ method.setAccessible(true);
 BigDecimal result = (BigDecimal) method.invoke(service, BigDecimal.TEN);
 ```
 
-### 6. Annotation Processing thủ công (Inject, Validate...)
+---
 
-**📌 Mục tiêu:** Xử lý annotation tự định nghĩa để inject/validate
+### 6. Custom Validator kiểm tra duplicate String[]
 
-**✔️ Khi dùng:** Viết mini framework hoặc khi không dùng Spring.
+**📌 Mục tiêu:** Dùng annotation để validate không có duplicate trong List (ví dụ: String[] field).
+
+**✔️ Khi dùng:** Dữ liệu từ nhiều DTO class nhưng có chung field (VD: `getLangCd`) cần validate.
 
 **Step-by-step:**
 
-1. Input: Object có các field được gắn annotation
-2. Output: Object đã được inject hoặc validate theo annotation
-3. Logic:
-   - Duyệt field → kiểm tra có annotation
-   - Tùy vào logic annotation (ví dụ @Inject) → inject bean tương ứng
+1. Tạo annotation `@NoDuplicateLangCd`
+2. Tạo `ConstraintValidator` sử dụng Reflection để gọi `getLangCd()`
+3. Áp dụng annotation lên List input DTO trong controller
 
-**Code:**
+**Annotation:**
 
 ```java
-for (Field field : obj.getClass().getDeclaredFields()) {
-    if (field.isAnnotationPresent(MyInject.class)) {
-        Object bean = getBean(field.getType());
-        field.setAccessible(true);
-        field.set(obj, bean);
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = LangCdDuplicateValidator.class)
+public @interface NoDuplicateLangCd {
+    String message() default "Duplicated langCd";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+    Class<?> clazz(); // class để lấy method chung
+}
+```
+
+**Validator:**
+
+```java
+public class LangCdDuplicateValidator implements ConstraintValidator<NoDuplicateLangCd, List<?>> {
+    private Class<?> clazz;
+
+    @Override
+    public void initialize(NoDuplicateLangCd constraintAnnotation) {
+        this.clazz = constraintAnnotation.clazz();
+    }
+
+    @Override
+    public boolean isValid(List<?> objects, ConstraintValidatorContext context) {
+        try {
+            Method method = clazz.getMethod("getLangCd");
+            Set<String> set = new HashSet<>();
+            for (Object o : objects) {
+                String val = (String) method.invoke(o);
+                if (!set.add(val)) return false;
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
 ```
+
+**Input DTO + Cách dùng:**
+
+```java
+public class LangItem {
+    private String langCd;
+    public String getLangCd() { return langCd; }
+}
+
+public class LangRequest {
+    @NoDuplicateLangCd(clazz = LangItem.class)
+    private List<LangItem> langs;
+}
+```
+
+**Controller:**
+
+```java
+@PostMapping("/api/lang")
+public ResponseEntity<?> save(@Valid @RequestBody LangRequest req) {
+    // xử lý bình thường nếu không lỗi
+    return ResponseEntity.ok("OK");
+}
+```
+
+**Output:**
+
+- Trường hợp duplicate `langCd` → trả về lỗi 400 với message "Duplicated langCd"
 
 ---
 
