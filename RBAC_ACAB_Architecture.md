@@ -54,3 +54,4 @@
   - Fintech → ABAC.  
   - Y tế → ABAC.  
   - E-Commerce → Hybrid RBAC + ABAC.
+- ** Best practice hiện nay: Hybrid RBAC + ABAC + Token lifecycle management + Audit logging.
