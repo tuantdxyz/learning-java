@@ -122,11 +122,13 @@ api.interceptors.response.use(
 ---
 
 📌 Tổng kết
-Redis Blacklist + TTL: thu hồi token stateless, tự động dọn dẹp.
+* Redis Blacklist + TTL: thu hồi token stateless, tự động dọn dẹp.
 
-Refresh Token Rotation: mỗi lần refresh sinh token mới.
+* Refresh Token Rotation: mỗi lần refresh sinh token mới.
 
-Reuse Detection: phát hiện hacker dùng lại token cũ.
+* Reuse Detection: phát hiện hacker dùng lại token cũ.
+
+* FE Interceptor: tự động gọi refresh khi Access Token hết hạn.
 
 Nuclear Revoke: xóa toàn bộ session khi phát hiện reuse.
 
