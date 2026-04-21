@@ -168,6 +168,64 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
 Nhược điểm: công nghệ mới, cần Java 21+.
 
+---
+
+# 📂 Bài toán xử lý file nặng (Excel, Word, PDF…)
+
+## 1. Đặc thù từng loại file
+- **Excel (XLSX):** thực chất là file ZIP chứa nhiều XML (mỗi sheet là một file riêng).  
+  → Không nên chia chunk raw 50MB, mà dùng **Apache POI SXSSF** hoặc streaming API để đọc sheet theo row.  
+- **Word (DOCX):** cũng là file ZIP chứa XML.  
+  → Dùng thư viện (Apache POI, docx4j) để parse nội dung, không đọc raw chunk.  
+- **PDF:** định dạng phức tạp, có cấu trúc trang, font, hình ảnh.  
+  → Dùng thư viện (PDFBox, iText) để đọc theo trang hoặc stream nội dung.
+
+---
+
+## 2. Chiến lược xử lý đa luồng
+- **Excel:**  
+  - Đọc từng sheet bằng thread riêng.  
+  - Nếu sheet quá lớn → đọc row theo streaming, đẩy vào queue, nhiều worker thread xử lý song song.  
+
+- **Word:**  
+  - Tách từng section hoặc chapter, mỗi thread xử lý một phần.  
+  - Với file lớn, nên stream text thay vì load toàn bộ vào RAM.  
+
+- **PDF:**  
+  - Tách theo trang, mỗi thread xử lý một page.  
+  - Phù hợp cho phân tích nội dung hoặc trích xuất dữ liệu song song.  
+
+---
+
+## 3. Công nghệ áp dụng
+- **ThreadPool:** giới hạn số thread, xử lý song song theo sheet/trang/section.  
+- **CompletableFuture:** khi cần pipeline nhiều bước (đọc → phân tích → ghi DB).  
+- **Virtual Threads (Java 21+):** phù hợp cho IO-bound, nhiều request đọc file lớn, code đơn giản như tuần tự.  
+- **ShedLock:** nếu job chạy trên nhiều node trong cluster, đảm bảo chỉ một node xử lý file tại một thời điểm.
+
+---
+
+## 4. Lưu ý quan trọng
+- **Không chia chunk raw (50MB) cho Excel/Word/PDF**: vì sẽ phá vỡ cấu trúc ZIP/XML/PDF.  
+- **Đọc theo đơn vị logic**: sheet, row, section, page.  
+- **Đồng bộ khi ghi**: nhiều thread ghi vào cùng file → cần lock hoặc queue.  
+- **Chống OutOfMemory:**  
+  - Dùng streaming API (SXSSF cho Excel, PDFBox cho PDF).  
+  - Giới hạn thread pool size.  
+  - Dọn dẹp tài nguyên (close file, stream).  
+- **Monitoring:** theo dõi heap, GC, thread count để phát hiện sớm vấn đề.
+
+---
+
+## 📌 Tổng kết
+- **Excel:** đọc theo sheet/row bằng streaming API.  
+- **Word:** đọc theo section/chapter, tránh load toàn bộ.  
+- **PDF:** đọc theo page, xử lý song song.  
+- **ThreadPool/CompletableFuture/Virtual Threads:** chọn tùy bài toán (batch, pipeline, IO-bound).  
+- **ShedLock:** cần thiết trong cluster để tránh duplicate job.  
+- **Best practice:** xử lý song song theo đơn vị logic của file, không chia chunk raw, kết hợp lock và streaming để đảm bảo hiệu năng và an toàn.
+
+
 ** Lưu ý:
 * Đọc tuần tự: mất vài giây đến vài chục giây tùy tốc độ ổ đĩa.
 
@@ -177,7 +235,6 @@ Nhược điểm: công nghệ mới, cần Java 21+.
 
 * Thực tế: với file 500MB trên SSD, đọc đa luồng có thể giảm thời gian từ ~5–10 giây xuống còn ~2–3 giây, tùy cấu hình hệ thống.
 
-📌 Tổng kết
 * ThreadPool: phù hợp cho batch job, xử lý file lớn.
 
 * CompletableFuture: phù hợp cho async pipeline, nhiều bước xử lý song song.
